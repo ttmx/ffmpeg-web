@@ -2,8 +2,12 @@
   "name": "ffmpeg-web",
   "version": "0.1.0",
   "private": true,
-  "homepage":"https://ttmx.github.io/ffmpeg-web",
+  "homepage": "https://ttmx.github.io/ffmpeg-web",
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.9.5",
+    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/free-solid-svg-icons": "^5.15.1",
+    "@fortawesome/react-fontawesome": "^0.1.13",
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.2.2",
@@ -17,8 +21,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-	"predeploy": "npm run build",
-	"deploy": "gh-pages -d build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
