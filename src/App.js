@@ -1,42 +1,34 @@
 import React, { Component } from 'react';
-import { FileManager } from './FileManager';
-import { ProcessingModules } from './ProcessingModules';
-import { Module } from './Module';
 import { ModuleList } from './ModuleList';
 import { EncodingMod } from './EncodingMod';
 import { InputMod } from './InputMod';
 import './App.css';
+import './FileList.css';
 
+var draggedModuleId;
 
 export default class App extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      files: {},
+      streams: [],
     }
 
     this.dropHandler = this.dropHandler.bind(this);
     this.fileHandler = this.fileHandler.bind(this);
-    this.removeFile = this.removeFile.bind(this);
   }
 
   componentDidMount() {
-    console.log(new Module);
+
   }
 
-  fileHandler(uploadedfiles) {
-    var files = this.state.files;
-    for (const file of uploadedfiles) {
-      files[file.name] = file;
+  fileHandler(uploadedFiles) {
+    const streams = this.state.streams;
+    for (const file of uploadedFiles) {
+      streams.push({ file: file, modules: [] });
     }
-    this.setState({ files: files });
-  }
-
-  removeFile(fileName) {
-    const files = this.state.files;
-    delete files[fileName];
-    this.setState({ files: files });
+    this.setState({ streams: streams });
   }
 
   dropHandler(event) {
@@ -56,15 +48,38 @@ export default class App extends Component {
     event.preventDefault();
   }
 
+  moduleDragHandler(event, id) {
+    draggedModuleId = id;
+  }
+
+  moduleDropHandler(event, i) {
+    const streams = this.state.streams;
+    streams[i].modules.push({ id: draggedModuleId, arguments: [] });
+    this.setState({ streams: streams });
+  }
+
   render() {
     return (
       <div className="App" onDrop={this.dropHandler} onDragEnter={this.dragEnterHandler} onDragLeave={this.dragLeaveHandler} onDragOver={this.dragOverHandler}>
-        <FileManager title="Files" id="file-manager" files={this.state.files} removeAction={this.removeFile}></FileManager>
-        <div className="main-wrapper">
-          <ModuleList>
-            <InputMod dragHandler={(event, id) => console.log(id)} />
-            <EncodingMod dragHandler={(event, id) => console.log(id)} />
-          </ModuleList>
+        <ModuleList>
+          <h1>Modules</h1>
+          <InputMod dragHandler={this.moduleDragHandler} />
+          <EncodingMod dragHandler={this.moduleDragHandler} />
+        </ModuleList>
+        <div id="sequence-container">
+          {Object.keys(this.state.streams).map((i) => {
+            return <div key={i} className="module-sequence" onDrop={(event) => this.moduleDropHandler(event, i)}>
+              <InputMod file={this.state.streams[i].file} />
+              {this.state.streams[i].modules.map((module, idx) => {
+                switch (module.id) {
+                  case 2:
+                    return <EncodingMod key={idx} />
+                  default:
+                    break;
+                }
+              })}
+            </div>
+          })}
         </div>
       </div>
     );
