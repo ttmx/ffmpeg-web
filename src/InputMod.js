@@ -44,18 +44,16 @@ export function InputMod(props) {
         }
 
         return <Module name="Input" id={1} dragHandler={props.dragHandler}>
-            <div className="main-container">
-                <div className="file">
-                    <FontAwesomeIcon icon={icon} style={{ fontSize: 50, marginRight: 10 }} />
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                        <div style={{ display: "flex", flexDirection: "column" }}>
-                            <span>{props.file.name}</span>
-                            <span style={{ fontSize: 15 }}>{sizeString(props.file.size)}</span>
-                        </div>
-                        {props.removeAction &&
-                            <FontAwesomeIcon className="remove-button" icon={faTimesCircle} onClick={() => props.removeAction(props.file.name)} />
-                        }
+            <div className="file">
+                <FontAwesomeIcon icon={icon} style={{ fontSize: 50, marginRight: 10 }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span>{props.file.name}</span>
+                        <span style={{ fontSize: 15 }}>{sizeString(props.file.size)}</span>
                     </div>
+                    {props.removeAction &&
+                        <FontAwesomeIcon className="remove-button" icon={faTimesCircle} onClick={() => props.removeAction(props.file.name)} />
+                    }
                 </div>
             </div>
         </Module>

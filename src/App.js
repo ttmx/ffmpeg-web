@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import { ModuleList } from './ModuleList';
 import { EncodingMod } from './EncodingMod';
+import { CutMod } from './CutMod';
 import { InputMod } from './InputMod';
 import './App.css';
 import './FileList.css';
+import './Module.css';
 
 var draggedModuleId;
 
@@ -65,6 +67,7 @@ export default class App extends Component {
           <h1>Modules</h1>
           <InputMod dragHandler={this.moduleDragHandler} />
           <EncodingMod dragHandler={this.moduleDragHandler} />
+          <CutMod dragHandler={this.moduleDragHandler} />
         </ModuleList>
         <div id="sequence-container">
           {Object.keys(this.state.streams).map((i) => {
@@ -74,6 +77,8 @@ export default class App extends Component {
                 switch (module.id) {
                   case 2:
                     return <EncodingMod key={idx} />
+                  case 3:
+                    return <CutMod key={idx} />
                   default:
                     break;
                 }
