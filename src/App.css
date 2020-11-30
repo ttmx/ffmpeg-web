@@ -66,13 +66,19 @@
   width: 100%;
 }
 
-.module-list, .module-sequence {
+.module-list, .module-sequence, .input {
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
   min-width: fit-content;
   overflow-y: auto;
+}
+
+.module-sequence-container {
+  display: flex;
+  min-width: fit-content;
+  height: 100%;
 }
 
 .module-list {

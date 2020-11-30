@@ -1,11 +1,15 @@
 import React, { Component } from 'react';
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import { ModuleList } from './ModuleList';
 import { EncodingMod } from './EncodingMod';
 import { CutMod } from './CutMod';
-import { InputMod } from './InputMod';
+import { Input } from './Input';
+import { Stream } from './Stream';
 import './App.css';
 import './FileList.css';
 import './Module.css';
+
+const ffmpeg = createFFmpeg({ log: true });
 
 var draggedModuleId;
 
@@ -14,11 +18,13 @@ export default class App extends Component {
     super(props);
 
     this.state = {
-      streams: [],
+      inputs: [],
     }
 
     this.dropHandler = this.dropHandler.bind(this);
     this.fileHandler = this.fileHandler.bind(this);
+
+    ffmpeg.load();
   }
 
   componentDidMount() {
@@ -26,11 +32,23 @@ export default class App extends Component {
   }
 
   fileHandler(uploadedFiles) {
-    const streams = this.state.streams;
-    for (const file of uploadedFiles) {
-      streams.push({ file: file, modules: [] });
-    }
-    this.setState({ streams: streams });
+    ffmpeg.setLogger(({ message }) => {
+      message = message.trim().split(": ");
+      if (message[0].includes("Stream #")) {
+        const inputs = this.state.inputs;
+        if (!inputs[uploadedFiles[0].name])
+          inputs[uploadedFiles[0].name] = { file: uploadedFiles[0], streams: [] };
+        inputs[uploadedFiles[0].name].streams.push({ type: message[1], modules: [] });
+        this.setState({ inputs: inputs });
+      }
+    });
+
+    (async () => { // TODO wait for ffmpeg loaded
+      for (const file of uploadedFiles) {
+        ffmpeg.FS("writeFile", file.name, await fetchFile(file));
+        await ffmpeg.run("-i", file.name);
+      }
+    })();
   }
 
   dropHandler(event) {
@@ -54,10 +72,10 @@ export default class App extends Component {
     draggedModuleId = id;
   }
 
-  moduleDropHandler(event, i) {
-    const streams = this.state.streams;
-    streams[i].modules.push({ id: draggedModuleId, arguments: [] });
-    this.setState({ streams: streams });
+  moduleDropHandler(event, input, stream) {
+    const inputs = this.state.inputs;
+    inputs[input].streams[stream].modules.push({ id: draggedModuleId, arguments: [] });
+    this.setState({ inputs: inputs });
   }
 
   render() {
@@ -65,24 +83,30 @@ export default class App extends Component {
       <div className="App" onDrop={this.dropHandler} onDragEnter={this.dragEnterHandler} onDragLeave={this.dragLeaveHandler} onDragOver={this.dragOverHandler}>
         <ModuleList>
           <h1>Modules</h1>
-          <InputMod dragHandler={this.moduleDragHandler} />
           <EncodingMod dragHandler={this.moduleDragHandler} />
           <CutMod dragHandler={this.moduleDragHandler} />
         </ModuleList>
         <div id="sequence-container">
-          {Object.keys(this.state.streams).map((i) => {
-            return <div key={i} className="module-sequence" onDrop={(event) => this.moduleDropHandler(event, i)}>
-              <InputMod file={this.state.streams[i].file} />
-              {this.state.streams[i].modules.map((module, idx) => {
-                switch (module.id) {
-                  case 2:
-                    return <EncodingMod key={idx} />
-                  case 3:
-                    return <CutMod key={idx} />
-                  default:
-                    break;
-                }
-              })}
+          {Object.keys(this.state.inputs).map(input => {
+            return <div key={input} className="input">
+              <Input file={this.state.inputs[input].file} />
+              <div className="module-sequence-container">
+                {Object.keys(this.state.inputs[input].streams).map(stream => {
+                  return <div key={stream} className="module-sequence" onDrop={(event) => this.moduleDropHandler(event, input, stream)}>
+                    <Stream streamId={stream} type={this.state.inputs[input].streams[stream].type} />
+                    {this.state.inputs[input].streams[stream].modules.map((module, idx) => {
+                      switch (module.id) {
+                        case 3:
+                          return <EncodingMod key={idx} />
+                        case 4:
+                          return <CutMod key={idx} />
+                        default:
+                          break;
+                      }
+                    })}
+                  </div>
+                })}
+              </div>
             </div>
           })}
         </div>
